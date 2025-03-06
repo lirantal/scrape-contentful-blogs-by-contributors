@@ -254,7 +254,31 @@ class BlogScraper:
         
         return None
 
-    def scrape_page(self, url):
+    def save_progress(self, current_page_url, processed_urls):
+        """Save scraping progress including all processed blog URLs"""
+        with open('scrape_progress.json', 'w') as f:
+            json.dump({
+                'current_page': current_page_url,
+                'processed_urls': list(processed_urls),  # Convert set to list for JSON
+                'timestamp': datetime.now().isoformat()
+            }, f)
+
+    def load_progress(self):
+        """Load previous scraping progress"""
+        try:
+            with open('scrape_progress.json', 'r') as f:
+                data = json.load(f)
+                # Convert list back to set for efficient lookups
+                data['processed_urls'] = set(data['processed_urls'])
+                return data
+        except FileNotFoundError:
+            return {
+                'current_page': None,
+                'processed_urls': set(),
+                'timestamp': None
+            }
+
+    def scrape_page(self, url, processed_urls):
         """Scrape a single page of blog posts"""
         html = self.fetch_page(url)
         if not html:
@@ -266,33 +290,57 @@ class BlogScraper:
         
         # Process each blog post
         for blog_url in blog_links:
+            # Skip if we've already processed this URL
+            if blog_url in processed_urls:
+                logger.info(f"Skipping already processed blog post: {blog_url}")
+                continue
+                
             logger.info(f"Processing blog post: {blog_url}")
             
             # Add delay to be respectful to the server
-            time.sleep(2)
+            time.sleep(self.post_delay)
             
             blog_html = self.fetch_page(blog_url)
             if not blog_html:
                 continue
             
-            post_data, content = self.parse_blog_post(blog_url, blog_html)
-            filename = post_data['slug']
-            self.save_as_markdown(post_data, content, filename)
+            try:
+                post_data, content = self.parse_blog_post(blog_url, blog_html)
+                filename = post_data['slug']
+                self.save_as_markdown(post_data, content, filename)
+                
+                # Mark this URL as processed
+                processed_urls.add(blog_url)
+                
+                # Save progress after each successful blog post
+                self.save_progress(url, processed_urls)
+                
+            except Exception as e:
+                logger.error(f"Error processing blog post {blog_url}: {e}")
+                continue
         
         return html
 
     def scrape(self):
-        """Scrape all pages of blog posts"""
+        """Scrape all pages of blog posts with resume capability"""
         logger.info(f"Starting scrape of {self.base_url}")
         
-        current_url = self.base_url
+        # Load previous progress
+        progress = self.load_progress()
+        processed_urls = progress['processed_urls']
+        current_url = progress['current_page'] or self.base_url
+        
+        if progress['timestamp']:
+            logger.info(f"Resuming scrape from page {current_url}")
+            logger.info(f"Already processed {len(processed_urls)} blog posts")
+        
         page_number = 1
         
         while current_url:
             logger.info(f"Scraping page {page_number}: {current_url}")
             
             # Scrape the current page
-            html = self.scrape_page(current_url)
+            html = self.scrape_page(current_url, processed_urls)
             if not html:
                 break
             
@@ -305,13 +353,16 @@ class BlogScraper:
                 break
             
             # Add a delay before fetching the next page
-            time.sleep(3)
+            time.sleep(self.page_delay)
             
             # Update for next iteration
             current_url = next_url
             page_number += 1
+            
+            # Save progress after each page
+            self.save_progress(current_url, processed_urls)
         
-        logger.info("Finished scraping all pages")
+        logger.info(f"Finished scraping all pages. Total posts processed: {len(processed_urls)}")
 
 class ScrapingStats:
     def __init__(self):
