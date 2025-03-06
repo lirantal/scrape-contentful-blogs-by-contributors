@@ -232,7 +232,7 @@ class BlogScraper:
         with open(output_path, 'w', encoding='utf-8') as f:
             f.write(frontmatter.dumps(post))
         
-        logger.info(f"Saved blog post: {output_path}")
+        logger.info(f"  -> Saved blog post: {output_path}")
 
     def get_next_page_url(self, html):
         """Extract the next page URL from the pagination element"""
