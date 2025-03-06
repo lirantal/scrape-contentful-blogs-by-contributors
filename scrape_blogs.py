@@ -94,6 +94,10 @@ class SnykBlogScraper:
         content = ''
         
         if content_element:
+            # Remove any toggle-play-wrapper elements before processing
+            for toggle_wrapper in content_element.find_all('div', class_='toggle-play-wrapper'):
+                toggle_wrapper.decompose()
+
             # Process code blocks first (pre + code elements)
             for pre in content_element.find_all('pre'):
                 code_block = pre.find('code')
