@@ -16,7 +16,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-class SnykBlogScraper:
+class BlogScraper:
     def __init__(self, base_url, output_dir="output"):
         self.base_url = base_url
         self.output_dir = output_dir
@@ -234,36 +234,85 @@ class SnykBlogScraper:
         
         logger.info(f"Saved blog post: {output_path}")
 
-    def scrape(self):
-        logger.info(f"Starting scrape of {self.base_url}")
+    def get_next_page_url(self, html):
+        """Extract the next page URL from the pagination element"""
+        soup = BeautifulSoup(html, 'html.parser')
+        pagination = soup.find('div', {'data-component': 'Pagination Links Bar'})
         
-        # Fetch the main page
-        html = self.fetch_page(self.base_url)
+        if not pagination:
+            return None
+            
+        # Find the "Next" button by looking for the chevron-right icon
+        next_button = pagination.find('a', title='Next')
+        if next_button:
+            next_url = next_button.get('href')
+            if next_url:
+                return urljoin(self.base_url, next_url)
+        
+        return None
+
+    def scrape_page(self, url):
+        """Scrape a single page of blog posts"""
+        html = self.fetch_page(url)
         if not html:
-            return
+            return None
         
-        # Extract blog links
+        # Extract blog links from this page
         blog_links = self.extract_blog_links(html)
-        logger.info(f"Found {len(blog_links)} blog posts to scrape")
+        logger.info(f"Found {len(blog_links)} blog posts on page {url}")
         
         # Process each blog post
-        for url in blog_links:
-            logger.info(f"Processing blog post: {url}")
+        for blog_url in blog_links:
+            logger.info(f"Processing blog post: {blog_url}")
             
             # Add delay to be respectful to the server
             time.sleep(2)
             
-            html = self.fetch_page(url)
-            if not html:
+            blog_html = self.fetch_page(blog_url)
+            if not blog_html:
                 continue
             
-            post_data, content = self.parse_blog_post(url, html)
+            post_data, content = self.parse_blog_post(blog_url, blog_html)
             filename = post_data['slug']
             self.save_as_markdown(post_data, content, filename)
+        
+        return html
+
+    def scrape(self):
+        """Scrape all pages of blog posts"""
+        logger.info(f"Starting scrape of {self.base_url}")
+        
+        current_url = self.base_url
+        page_number = 1
+        
+        while current_url:
+            logger.info(f"Scraping page {page_number}: {current_url}")
+            
+            # Scrape the current page
+            html = self.scrape_page(current_url)
+            if not html:
+                break
+            
+            # Get the next page URL
+            next_url = self.get_next_page_url(html)
+            
+            # If there's no next page, we're done
+            if not next_url:
+                logger.info("No more pages to scrape")
+                break
+            
+            # Add a delay before fetching the next page
+            time.sleep(3)
+            
+            # Update for next iteration
+            current_url = next_url
+            page_number += 1
+        
+        logger.info("Finished scraping all pages")
 
 def main():
     base_url = "https://snyk.io/contributors/liran-tal/"
-    scraper = SnykBlogScraper(base_url)
+    scraper = BlogScraper(base_url)
     scraper.scrape()
 
 if __name__ == "__main__":
