@@ -17,9 +17,12 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 class BlogScraper:
-    def __init__(self, base_url, output_dir="output"):
+    def __init__(self, base_url, output_dir="output", page_delay=3, post_delay=2, max_retries=3):
         self.base_url = base_url
         self.output_dir = output_dir
+        self.page_delay = page_delay
+        self.post_delay = post_delay
+        self.max_retries = max_retries
         self.session = requests.Session()
         self.headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
