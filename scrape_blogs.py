@@ -313,6 +313,26 @@ class BlogScraper:
         
         logger.info("Finished scraping all pages")
 
+class ScrapingStats:
+    def __init__(self):
+        self.total_posts = 0
+        self.failed_posts = 0
+        self.total_images = 0
+        self.failed_images = 0
+        self.start_time = datetime.now()
+
+    def print_summary(self):
+        duration = datetime.now() - self.start_time
+        logger.info(f"""
+Scraping Summary:
+----------------
+Total Posts: {self.total_posts}
+Failed Posts: {self.failed_posts}
+Total Images: {self.total_images}
+Failed Images: {self.failed_images}
+Duration: {duration}
+        """)
+
 def main():
     base_url = "https://snyk.io/contributors/liran-tal/"
     scraper = BlogScraper(base_url)
