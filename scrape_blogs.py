@@ -75,39 +75,16 @@ class SnykBlogScraper:
         # Extract metadata (adjust selectors as needed)
         title = soup.find('h1').get_text().strip() if soup.find('h1') else ''
         
-        # Find publication date - look for the date in the blog card first
+        # Find publication date in the article component with txt-body-bold class
         pub_date = datetime.now().strftime('%Y-%m-%d')  # Default to current date
-        
-        # Try different date selectors
-        date_selectors = [
-            'time[datetime]',  # Look for semantic time tag with datetime attribute
-            '.blog-card time',  # Look for time within blog card
-            'article time',    # Look for time within article
-            '[class*="date"]', # Look for any element with 'date' in its class
-        ]
-        
-        for selector in date_selectors:
-            date_element = soup.select_one(selector)
-            if date_element:
-                # Try to get the datetime attribute first
-                date_str = date_element.get('datetime', '')
-                if not date_str:
-                    date_str = date_element.get_text().strip()
-                
-                try:
-                    # Try different date formats
-                    for date_format in ['%Y-%m-%d', '%B %d, %Y', '%Y-%m-%dT%H:%M:%S.%fZ']:
-                        try:
-                            parsed_date = datetime.strptime(date_str, date_format)
-                            pub_date = parsed_date.strftime('%Y-%m-%d')
-                            break
-                        except ValueError:
-                            continue
-                    if pub_date:  # If we successfully parsed a date, break the outer loop
-                        break
-                except ValueError:
-                    logger.warning(f"Could not parse date from {date_str}")
-                    continue
+        date_element = soup.select_one('article p.txt-body-bold')
+        if date_element:
+            try:
+                date_text = date_element.get_text().strip()
+                parsed_date = datetime.strptime(date_text, '%B %d, %Y')
+                pub_date = parsed_date.strftime('%Y-%m-%d')
+            except ValueError:
+                logger.warning(f"Could not parse date from {date_text}")
 
         # Generate slug from URL
         slug = url.rstrip('/').split('/')[-1]
