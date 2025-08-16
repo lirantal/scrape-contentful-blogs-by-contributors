@@ -139,7 +139,9 @@ def download_image(self, image_url, post_slug, for_content=False):
 ```
 
 **Features:**
-- Unique naming with post slug prefix
+- **Clean, short filenames**: Uses post slug + random 8-char alphanumeric suffix (e.g., `post-slug-8bs9j3ns.jpg`)
+- **Filesystem-safe naming**: Only alphanumeric characters, no URL encoding or special characters
+- **Smart extension detection**: Determines file type from HTTP content-type headers
 - Organized directory structure
 - **Dual path format support**: 
   - Content images use `/images/blog/` format (cleaner for web deployment)

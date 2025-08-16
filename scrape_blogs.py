@@ -8,6 +8,8 @@ from urllib.parse import urljoin
 import frontmatter
 import time
 import logging
+import random
+import string
 
 # Configure logging
 logging.basicConfig(
@@ -63,18 +65,40 @@ class BlogScraper:
             response = self.session.get(image_url, headers=self.headers)
             response.raise_for_status()
             
-            # Extract image filename from URL
-            image_filename = image_url.split('/')[-1]
-            image_path = os.path.join(self.output_dir, "assets/images/blog", f"{post_slug}-{image_filename}")
+            # Generate clean, short filename: post_slug + random 8-char alphanumeric suffix
+            
+            # Generate random 8-character alphanumeric suffix
+            suffix = ''.join(random.choices(string.ascii_lowercase + string.digits, k=8))
+            
+            # Determine file extension from content type or URL
+            content_type = response.headers.get('content-type', '')
+            if 'jpeg' in content_type or 'jpg' in content_type:
+                extension = '.jpg'
+            elif 'png' in content_type:
+                extension = '.png'
+            elif 'gif' in content_type:
+                extension = '.gif'
+            elif 'webp' in content_type:
+                extension = '.webp'
+            else:
+                # Fallback: try to extract extension from URL
+                url_parts = image_url.split('?')[0].split('#')[0]  # Remove query params and fragments
+                extension = os.path.splitext(url_parts)[1]
+                if not extension or len(extension) > 5:  # Sanity check
+                    extension = '.jpg'  # Default fallback
+            
+            # Create clean filename
+            clean_filename = f"{post_slug}-{suffix}{extension}"
+            image_path = os.path.join(self.output_dir, "assets/images/blog", clean_filename)
             
             with open(image_path, 'wb') as f:
                 f.write(response.content)
             
             # Return different path format based on usage
             if for_content:
-                return f"/images/blog/{post_slug}-{image_filename}"
+                return f"/images/blog/{clean_filename}"
             else:
-                return f"~/assets/images/blog/{post_slug}-{image_filename}"
+                return f"~/assets/images/blog/{clean_filename}"
         except Exception as e:
             logger.error(f"Error downloading image {image_url}: {e}")
             return image_url
