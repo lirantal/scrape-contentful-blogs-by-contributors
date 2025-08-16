@@ -46,7 +46,7 @@ The script will:
 - Scrape all blog posts from the contributor's page
 - Save each blog post as a markdown file with proper frontmatter
 - Download and save all images locally, updating the references in the markdown
-- **Image Paths**: Content images use `/images/blog/` format, featured images use `~/assets/images/blog_featured/` format
+- **Image Paths**: Content images use `/images/blog/` format, featured images use `~/assets/images/blog/` format (maintaining compatibility)
 
 ## Output Format
 
@@ -68,7 +68,7 @@ image: ~/assets/images/blog_featured/image.jpg
 
 Blog post content...
 
-Images in the content will use `/images/blog/filename.jpg` format, while the frontmatter image field uses `~/assets/images/blog_featured/filename.jpg`.
+Images in the content will use `/images/blog/filename.jpg` format, while the frontmatter image field uses `~/assets/images/blog/filename.jpg` (maintaining compatibility with existing systems).
 ```
 
 ## Deactivating the Virtual Environment

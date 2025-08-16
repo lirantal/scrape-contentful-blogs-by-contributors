@@ -106,7 +106,8 @@ class BlogScraper:
             if for_content:
                 return f"/images/blog/{clean_filename}"
             else:
-                return f"~/assets/images/blog_featured/{clean_filename}" if is_featured else f"~/assets/images/blog/{clean_filename}"
+                # For frontmatter, always return blog path regardless of where file is saved
+                return f"~/assets/images/blog/{clean_filename}"
         except Exception as e:
             logger.error(f"Error downloading image {image_url}: {e}")
             return image_url

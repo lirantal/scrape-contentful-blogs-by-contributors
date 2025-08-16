@@ -147,7 +147,8 @@ def download_image(self, image_url, post_slug, for_content=False):
   - Featured images: `output/assets/images/blog_featured/`
 - **Dual path format support**: 
   - Content images use `/images/blog/` format (cleaner for web deployment)
-  - Featured images use `~/assets/images/blog_featured/` format
+  - Featured images use `~/assets/images/blog/` format (maintaining compatibility)
+- **Smart file organization**: Featured images saved to `blog_featured/` directory but referenced from `blog/` path
 - Automatic path selection based on usage context
 
 ### 5. Markdown Generation with Frontmatter
@@ -175,7 +176,7 @@ image: "~/assets/images/blog_featured/post-slug-image.jpg"
 canonical_url: "https://original-blog-url.com/post"
 ---
 
-**Note:** The `image` field in frontmatter uses `~/assets/images/blog_featured/` format, while images in the content body use `/images/blog/` format for cleaner web deployment.
+**Note:** The `image` field in frontmatter uses `~/assets/images/blog/` format (maintaining compatibility), while images in the content body use `/images/blog/` format for cleaner web deployment. Featured images are physically stored in the `blog_featured/` directory for better organization.
 ```
 
 ## Pagination and Progress Management
