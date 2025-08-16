@@ -182,8 +182,8 @@ def get_next_page_url(self, html):
     soup = BeautifulSoup(html, 'html.parser')
     pagination = soup.find('div', {'data-component': 'Pagination Links Bar'})
     
-    # Find "Next" button by chevron-right icon
-    next_button = pagination.find('a', title='Next')
+    # Find "Next" button by looking for various possible titles
+    next_button = pagination.find('a', title='Next') or pagination.find('a', title='Next Page')
     if next_button:
         next_url = next_button.get('href')
         return urljoin(self.base_url, next_url)
@@ -192,8 +192,9 @@ def get_next_page_url(self, html):
 
 **Current Implementation:**
 - Hardcoded selector: `{'data-component': 'Pagination Links Bar'}`
-- Assumes "Next" button has `title='Next'` attribute
-- **Limitation**: Not adaptable to different pagination structures
+- **Flexible Next button detection**: Supports both `title='Next'` and `title='Next Page'`
+- **Improved adaptability**: Better handling of different pagination implementations
+- **Limitation**: Still requires specific data-component attribute
 
 ### Progress Persistence:
 ```python
@@ -267,10 +268,10 @@ logger = logging.getLogger(__name__)
 ## Configuration and Customization Points
 
 ### Hardcoded Selectors (Require Adaptation):
-1. **Blog Link Detection**: `href=lambda x: x and '/blog/' in x`
+1. **Blog Link Detection**: `href=lambda x: x and '/blog/' in x` *(Enhanced with filtering)*
 2. **Date Extraction**: `'article p.txt-body-bold'`
 3. **Content Container**: `'txt-rich-long'` class
-4. **Pagination**: `{'data-component': 'Pagination Links Bar'}`
+4. **Pagination**: `{'data-component': 'Pagination Links Bar'}` *(Enhanced with flexible Next button detection)*
 
 ### Easily Configurable:
 1. **Delays**: `page_delay`, `post_delay`

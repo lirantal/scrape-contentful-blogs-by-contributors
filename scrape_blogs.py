@@ -47,11 +47,14 @@ class BlogScraper:
         
         # Find all blog post links
         # Note: You'll need to adjust these selectors based on the actual HTML structure
-        blog_elements = soup.find_all('a', href=lambda x: x and '/blog/' in x)
+        # Filter out the main blog page URL and only get actual blog post URLs
+        blog_elements = soup.find_all('a', href=lambda x: x and '/blog/' in x and x != '/blog/' and not x.endswith('/blog/'))
         
         for blog in blog_elements:
             link = urljoin(self.base_url, blog.get('href'))
-            blog_links.append(link)
+            # Additional filter to ensure we don't process the main blog page
+            if link != 'https://snyk.io/blog/' and link != 'https://snyk.io/blog':
+                blog_links.append(link)
             
         return list(set(blog_links))  # Remove duplicates
 
@@ -247,14 +250,21 @@ class BlogScraper:
         pagination = soup.find('div', {'data-component': 'Pagination Links Bar'})
         
         if not pagination:
+            logger.warning("No pagination element found")
             return None
             
-        # Find the "Next" button by looking for the chevron-right icon
-        next_button = pagination.find('a', title='Next')
+        # Find the "Next" button by looking for various possible titles
+        next_button = pagination.find('a', title='Next') or pagination.find('a', title='Next Page')
         if next_button:
             next_url = next_button.get('href')
             if next_url:
-                return urljoin(self.base_url, next_url)
+                full_next_url = urljoin(self.base_url, next_url)
+                logger.info(f"Found next page URL: {full_next_url}")
+                return full_next_url
+            else:
+                logger.warning("Next button found but no href attribute")
+        else:
+            logger.warning("No 'Next' button found in pagination")
         
         return None
 
@@ -291,6 +301,12 @@ class BlogScraper:
         # Extract blog links from this page
         blog_links = self.extract_blog_links(html)
         logger.info(f"Found {len(blog_links)} blog posts on page {url}")
+        
+        # Debug: Log the first few blog links found
+        if blog_links:
+            logger.info(f"Sample blog links found: {blog_links[:3]}")
+        else:
+            logger.warning("No blog links found on this page")
         
         # Process each blog post
         for blog_url in blog_links:
@@ -355,6 +371,8 @@ class BlogScraper:
             if not next_url:
                 logger.info("No more pages to scrape")
                 break
+            
+            logger.info(f"Moving to next page: {next_url}")
             
             # Add a delay before fetching the next page
             time.sleep(self.page_delay)

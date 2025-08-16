@@ -30,11 +30,11 @@ The scraper was originally developed for Snyk's contributor blog pages (e.g., `h
 ## Key Features
 
 ### Content Extraction
-- **Blog post discovery** via pagination through contributor pages
+- **Blog post discovery** via pagination through contributor pages *(Enhanced with flexible Next button detection)*
 - **Metadata extraction** including title, description, publication date, and canonical URLs
 - **Content conversion** from HTML to clean markdown format
 - **Code block preservation** with language detection and proper formatting
-- **Image handling** with local download and path updates
+- **Image handling** with local download and path updates *(Enhanced with dual path format support)*
 
 ### Robustness
 - **Error handling** with comprehensive logging
