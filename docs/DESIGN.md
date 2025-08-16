@@ -119,7 +119,7 @@ for pre in content_element.find_all('pre'):
 
 ### 4. Image Asset Management
 ```python
-def download_image(self, image_url, post_slug):
+def download_image(self, image_url, post_slug, for_content=False):
     response = self.session.get(image_url, headers=self.headers)
     response.raise_for_status()
     
@@ -127,17 +127,24 @@ def download_image(self, image_url, post_slug):
     image_filename = image_url.split('/')[-1]
     image_path = os.path.join(self.output_dir, "assets/images/blog", f"{post_slug}-{image_filename}")
     
-    # Save locally and return relative path
+    # Save locally and return different path format based on usage
     with open(image_path, 'wb') as f:
         f.write(response.content)
     
-    return f"~/assets/images/blog/{post_slug}-{image_filename}"
+    # Return different path format based on usage
+    if for_content:
+        return f"/images/blog/{post_slug}-{image_filename}"
+    else:
+        return f"~/assets/images/blog/{post_slug}-{image_filename}"
 ```
 
 **Features:**
 - Unique naming with post slug prefix
 - Organized directory structure
-- Relative path references for markdown compatibility
+- **Dual path format support**: 
+  - Content images use `/images/blog/` format (cleaner for web deployment)
+  - Frontmatter images use `~/assets/images/blog/` format (preserving existing behavior)
+- Automatic path selection based on usage context
 
 ### 5. Markdown Generation with Frontmatter
 ```python
@@ -163,6 +170,8 @@ tags: []
 image: "~/assets/images/blog/post-slug-image.jpg"
 canonical_url: "https://original-blog-url.com/post"
 ---
+
+**Note:** The `image` field in frontmatter uses `~/assets/images/blog/` format, while images in the content body use `/images/blog/` format for cleaner web deployment.
 ```
 
 ## Pagination and Progress Management

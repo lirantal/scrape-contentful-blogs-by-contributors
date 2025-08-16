@@ -55,7 +55,7 @@ class BlogScraper:
             
         return list(set(blog_links))  # Remove duplicates
 
-    def download_image(self, image_url, post_slug):
+    def download_image(self, image_url, post_slug, for_content=False):
         try:
             response = self.session.get(image_url, headers=self.headers)
             response.raise_for_status()
@@ -66,8 +66,12 @@ class BlogScraper:
             
             with open(image_path, 'wb') as f:
                 f.write(response.content)
-                
-            return f"~/assets/images/blog/{post_slug}-{image_filename}"
+            
+            # Return different path format based on usage
+            if for_content:
+                return f"/images/blog/{post_slug}-{image_filename}"
+            else:
+                return f"~/assets/images/blog/{post_slug}-{image_filename}"
         except Exception as e:
             logger.error(f"Error downloading image {image_url}: {e}")
             return image_url
@@ -163,7 +167,7 @@ class BlogScraper:
                 img_url = img.get('src', '')
                 if img_url:
                     img_url = urljoin(url, img_url)
-                    local_img_path = self.download_image(img_url, slug)
+                    local_img_path = self.download_image(img_url, slug, for_content=True)
                     # Update image reference in markdown format
                     img.replace_with(f"![{img.get('alt', 'image')}]({local_img_path})\n")
 
@@ -210,7 +214,7 @@ class BlogScraper:
         if og_image:
             image_url = og_image.get('content', '')
             if image_url:
-                main_image = self.download_image(image_url, slug)
+                main_image = self.download_image(image_url, slug, for_content=False)
 
         # Create frontmatter data
         post_data = {
