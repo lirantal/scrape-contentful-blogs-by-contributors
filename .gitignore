@@ -37,3 +37,6 @@ output/
 # OS
 .DS_Store
 Thumbs.db 
+
+# Ignore the scrape progress metadata
+scrape_progress.json
