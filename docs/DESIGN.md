@@ -142,10 +142,12 @@ def download_image(self, image_url, post_slug, for_content=False):
 - **Clean, short filenames**: Uses post slug + random 8-char alphanumeric suffix (e.g., `post-slug-8bs9j3ns.jpg`)
 - **Filesystem-safe naming**: Only alphanumeric characters, no URL encoding or special characters
 - **Smart extension detection**: Determines file type from HTTP content-type headers
-- Organized directory structure
+- **Organized directory structure**:
+  - Content images: `output/assets/images/blog/`
+  - Featured images: `output/assets/images/blog_featured/`
 - **Dual path format support**: 
   - Content images use `/images/blog/` format (cleaner for web deployment)
-  - Frontmatter images use `~/assets/images/blog/` format (preserving existing behavior)
+  - Featured images use `~/assets/images/blog_featured/` format
 - Automatic path selection based on usage context
 
 ### 5. Markdown Generation with Frontmatter
@@ -169,11 +171,11 @@ keywords: []
 slug: "generated-from-url"
 draft: false
 tags: []
-image: "~/assets/images/blog/post-slug-image.jpg"
+image: "~/assets/images/blog_featured/post-slug-image.jpg"
 canonical_url: "https://original-blog-url.com/post"
 ---
 
-**Note:** The `image` field in frontmatter uses `~/assets/images/blog/` format, while images in the content body use `/images/blog/` format for cleaner web deployment.
+**Note:** The `image` field in frontmatter uses `~/assets/images/blog_featured/` format, while images in the content body use `/images/blog/` format for cleaner web deployment.
 ```
 
 ## Pagination and Progress Management

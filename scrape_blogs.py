@@ -33,6 +33,7 @@ class BlogScraper:
         # Create output directory if it doesn't exist
         os.makedirs(output_dir, exist_ok=True)
         os.makedirs(os.path.join(output_dir, "assets/images/blog"), exist_ok=True)
+        os.makedirs(os.path.join(output_dir, "assets/images/blog_featured"), exist_ok=True)
 
     def fetch_page(self, url):
         try:
@@ -60,7 +61,7 @@ class BlogScraper:
             
         return list(set(blog_links))  # Remove duplicates
 
-    def download_image(self, image_url, post_slug, for_content=False):
+    def download_image(self, image_url, post_slug, for_content=False, is_featured=False):
         try:
             response = self.session.get(image_url, headers=self.headers)
             response.raise_for_status()
@@ -89,7 +90,14 @@ class BlogScraper:
             
             # Create clean filename
             clean_filename = f"{post_slug}-{suffix}{extension}"
-            image_path = os.path.join(self.output_dir, "assets/images/blog", clean_filename)
+            
+            # Choose directory based on image type
+            if is_featured:
+                image_dir = "assets/images/blog_featured"
+                image_path = os.path.join(self.output_dir, image_dir, clean_filename)
+            else:
+                image_dir = "assets/images/blog"
+                image_path = os.path.join(self.output_dir, image_dir, clean_filename)
             
             with open(image_path, 'wb') as f:
                 f.write(response.content)
@@ -98,7 +106,7 @@ class BlogScraper:
             if for_content:
                 return f"/images/blog/{clean_filename}"
             else:
-                return f"~/assets/images/blog/{clean_filename}"
+                return f"~/assets/images/blog_featured/{clean_filename}" if is_featured else f"~/assets/images/blog/{clean_filename}"
         except Exception as e:
             logger.error(f"Error downloading image {image_url}: {e}")
             return image_url
@@ -241,7 +249,7 @@ class BlogScraper:
         if og_image:
             image_url = og_image.get('content', '')
             if image_url:
-                main_image = self.download_image(image_url, slug, for_content=False)
+                main_image = self.download_image(image_url, slug, for_content=False, is_featured=True)
 
         # Create frontmatter data
         post_data = {

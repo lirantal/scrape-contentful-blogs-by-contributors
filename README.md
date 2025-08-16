@@ -41,11 +41,12 @@ python3 scrape_blogs.py
 
 The script will:
 - Create an `output` directory for the markdown files
-- Create an `output/assets/images/blog` directory for downloaded images
+- Create an `output/assets/images/blog` directory for content images
+- Create an `output/assets/images/blog_featured` directory for featured images
 - Scrape all blog posts from the contributor's page
 - Save each blog post as a markdown file with proper frontmatter
 - Download and save all images locally, updating the references in the markdown
-- **Image Paths**: Content images use `/images/blog/` format, frontmatter uses `~/assets/images/blog/` format
+- **Image Paths**: Content images use `/images/blog/` format, featured images use `~/assets/images/blog_featured/` format
 
 ## Output Format
 
@@ -62,12 +63,12 @@ keywords: ['']
 slug: slug-for-blog-post
 draft: false
 tags: ['']
-image: ~/assets/images/blog/image.jpg
+image: ~/assets/images/blog_featured/image.jpg
 ---
 
 Blog post content...
 
-Images in the content will use `/images/blog/filename.jpg` format, while the frontmatter image field uses `~/assets/images/blog/filename.jpg`.
+Images in the content will use `/images/blog/filename.jpg` format, while the frontmatter image field uses `~/assets/images/blog_featured/filename.jpg`.
 ```
 
 ## Deactivating the Virtual Environment
