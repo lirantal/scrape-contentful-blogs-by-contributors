@@ -77,3 +77,7 @@ When you're done, you can deactivate the virtual environment:
 ```bash
 deactivate
 ``` 
+
+## Contributing
+
+Please consult [CONTRIBUTING](./CONTRIBUTING.md) for guidelines on contributing to this project.
